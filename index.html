@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KarabiberOto Web</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#store" aria-label="KarabiberOto">
+                <span class="brand-mark">K</span>
+                <span>
+                    <strong>KarabiberOto</strong>
+                    <small>Web Magaza</small>
+                </span>
+            </a>
+
+            <nav class="nav-list" aria-label="Ana menu">
+                <button class="nav-button is-active" data-view="store" type="button">
+                    <span class="icon">⌂</span>
+                    <span>Magaza</span>
+                </button>
+                <button class="nav-button" data-view="ai" type="button">
+                    <span class="icon">✦</span>
+                    <span>AI Renk</span>
+                </button>
+                <button class="nav-button" data-view="scanner" type="button">
+                    <span class="icon">▦</span>
+                    <span>Barkod</span>
+                </button>
+                <button class="nav-button" data-view="profile" type="button">
+                    <span class="icon">◎</span>
+                    <span>Profil</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <label for="apiBase">API adresi</label>
+                <input id="apiBase" type="url" autocomplete="off">
+                <button id="saveApiBase" class="button secondary" type="button">Kaydet</button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Mobildeki akislari webde deneyin</p>
+                    <h1 id="viewTitle">Magaza</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span id="connectionStatus" class="status neutral">Baglanti kontrol ediliyor</span>
+                    <button id="openCart" class="cart-button" type="button" aria-label="Sepeti ac">
+                        <span>Sepet</span>
+                        <strong id="cartCount">0</strong>
+                    </button>
+                </div>
+            </header>
+
+            <section id="storeView" class="view is-active" aria-labelledby="viewTitle">
+                <div class="toolbar">
+                    <div class="search-field">
+                        <span>⌕</span>
+                        <input id="searchInput" type="search" placeholder="Urun, renk veya kategori ara">
+                    </div>
+                    <button id="refreshCatalog" class="button secondary" type="button">Yenile</button>
+                </div>
+
+                <div id="categoryList" class="category-strip" aria-label="Kategoriler"></div>
+                <div id="catalogState" class="state-line"></div>
+                <div id="productsGrid" class="products-grid"></div>
+            </section>
+
+            <section id="aiView" class="view" aria-labelledby="viewTitle">
+                <div class="ai-layout">
+                    <section class="work-panel">
+                        <div class="image-drop">
+                            <input id="vehicleImage" type="file" accept="image/*">
+                            <img id="vehiclePreview" alt="">
+                            <div id="emptyPreview" class="empty-preview">
+                                <strong>Arac fotografi secin</strong>
+                                <span>Renk onizleme sonucu burada gorunur.</span>
+                            </div>
+                            <div id="processingOverlay" class="processing-overlay">Isleniyor...</div>
+                        </div>
+                        <div class="preview-actions">
+                            <button id="toggleOriginal" class="button secondary" type="button" disabled>Orijinal / Sonuc</button>
+                            <button id="downloadPreview" class="button secondary" type="button" disabled>Indir</button>
+                        </div>
+                    </section>
+
+                    <section class="controls-panel">
+                        <h2>Renk secimi</h2>
+                        <div id="colorPalette" class="color-palette"></div>
+                        <label class="custom-color">
+                            <span>Ozel renk</span>
+                            <input id="customColor" type="color" value="#1193d4">
+                        </label>
+                        <button id="generatePreview" class="button primary" type="button" disabled>Onizleme Olustur</button>
+                        <p id="aiState" class="state-line"></p>
+                    </section>
+                </div>
+            </section>
+
+            <section id="scannerView" class="view" aria-labelledby="viewTitle">
+                <div class="scanner-panel">
+                    <div>
+                        <h2>Barkodla urun bul</h2>
+                        <p>Web kamerasi yerine barkod kodunu girerek mobildeki urun eslestirme akisini test edebilirsiniz.</p>
+                    </div>
+                    <form id="barcodeForm" class="barcode-form">
+                        <input id="barcodeInput" type="text" placeholder="Orn. 123456789" autocomplete="off">
+                        <button class="button primary" type="submit">Sorgula</button>
+                    </form>
+                    <div id="barcodeResult" class="barcode-result"></div>
+                </div>
+            </section>
+
+            <section id="profileView" class="view" aria-labelledby="viewTitle">
+                <div class="profile-grid">
+                    <section id="authCard" class="auth-card"></section>
+                    <section class="profile-card">
+                        <h2>Oturum bilgisi</h2>
+                        <dl>
+                            <div>
+                                <dt>Kullanici</dt>
+                                <dd id="profileName">Misafir</dd>
+                            </div>
+                            <div>
+                                <dt>E-posta</dt>
+                                <dd id="profileEmail">Giris yapilmadi</dd>
+                            </div>
+                            <div>
+                                <dt>Token</dt>
+                                <dd id="profileToken">Yok</dd>
+                            </div>
+                        </dl>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <dialog id="productDialog" class="dialog"></dialog>
+    <dialog id="cartDialog" class="dialog cart-dialog"></dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+</body>
+</html>
