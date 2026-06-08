@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function bindElements() {
     [
         "cartCount", "openCart", "viewTitle",
-        "searchInput", "refreshCatalog", "categoryList", "filterCategoryList", "clearCategoryFilter", "catalogState", "productsGrid",
+        "searchInput", "refreshCatalog", "filterCategoryList", "clearCategoryFilter", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
         "barcodeForm", "barcodeInput", "barcodeResult", "authCard", "profileName",
@@ -134,20 +134,7 @@ async function loadCatalog() {
 }
 
 function renderCategories() {
-    const allButton = categoryButton({ id: "", name: "Tüm Kategoriler" });
-    els.categoryList.replaceChildren(allButton, ...state.categories.map(categoryButton));
     renderFilterCategories();
-}
-
-function categoryButton(category) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `category-button${state.selectedCategory === category.id ? " is-active" : ""}`;
-    button.textContent = category.name;
-    button.addEventListener("click", () => {
-        selectCategory(state.selectedCategory === category.id ? "" : category.id);
-    });
-    return button;
 }
 
 function renderFilterCategories() {
