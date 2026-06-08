@@ -32,6 +32,10 @@
                 <button class="nav-button" data-view="profile" type="button">
                     <span class="icon">◎</span> Hesap
                 </button>
+                <button id="openFavorites" class="nav-button favorite-nav-button" type="button">
+                    <span class="icon">♡</span> Favoriler
+                    <strong id="favoriteCount">0</strong>
+                </button>
             </nav>
 
             <button id="openCart" class="cart-button" type="button" aria-label="Sepeti aç">
@@ -160,6 +164,7 @@
     </div>
 
     <dialog id="productDialog" class="dialog"></dialog>
+    <dialog id="favoritesDialog" class="dialog"></dialog>
     <dialog id="cartDialog" class="dialog cart-dialog"></dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>

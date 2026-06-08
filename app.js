@@ -7,6 +7,7 @@ const state = {
     products: [],
     categories: [],
     cart: parseJSON(localStorage.getItem("karabiber_cart")) || [],
+    favorites: parseJSON(localStorage.getItem("karabiber_favorites")) || [],
     selectedCategory: "",
     search: "",
     selectedColor: { id: "crimson", name: "Crimson", hex: "#DC2626", productCode: "KRB-CR" },
@@ -35,25 +36,26 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProfile();
     renderColorPalette();
     renderCartCount();
+    renderFavoriteCount();
     setView("store");
     loadCatalog();
 });
 
 function bindElements() {
     [
-        "cartCount", "openCart", "viewTitle",
+        "cartCount", "favoriteCount", "openCart", "openFavorites", "viewTitle",
         "searchInput", "refreshCatalog", "filterCategoryList", "clearCategoryFilter", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
         "barcodeForm", "barcodeInput", "barcodeResult", "authCard", "profileName",
-        "profileEmail", "productDialog", "cartDialog", "toast"
+        "profileEmail", "productDialog", "favoritesDialog", "cartDialog", "toast"
     ].forEach((id) => {
         els[id] = document.getElementById(id);
     });
 }
 
 function bindEvents() {
-    document.querySelectorAll(".nav-button").forEach((button) => {
+    document.querySelectorAll(".nav-button[data-view]").forEach((button) => {
         button.addEventListener("click", () => setView(button.dataset.view));
     });
 
@@ -64,6 +66,7 @@ function bindEvents() {
         renderProducts();
     });
     els.openCart.addEventListener("click", renderCart);
+    els.openFavorites.addEventListener("click", renderFavorites);
     els.vehicleImage.addEventListener("change", onVehicleImageSelected);
     els.customColor.addEventListener("input", (event) => {
         state.selectedColor = { id: "custom", name: "Custom", hex: event.target.value, productCode: "CUSTOM" };
@@ -83,7 +86,7 @@ function setView(viewName) {
         profile: "Hesap",
     };
 
-    document.querySelectorAll(".nav-button").forEach((button) => {
+    document.querySelectorAll(".nav-button[data-view]").forEach((button) => {
         button.classList.toggle("is-active", button.dataset.view === viewName);
     });
     document.querySelectorAll(".view").forEach((view) => view.classList.remove("is-active"));
@@ -183,8 +186,9 @@ function renderProducts() {
 function productCard(product) {
     const card = document.createElement("article");
     card.className = "product-card";
+    const isFavorite = isFavoriteProduct(product.id);
     card.innerHTML = `
-        <button class="favorite-button" type="button" aria-label="Favorilere ekle">♡</button>
+        <button class="favorite-button${isFavorite ? " is-active" : ""}" type="button" aria-label="${isFavorite ? "Favorilerden çıkar" : "Favorilere ekle"}">${isFavorite ? "♥" : "♡"}</button>
         <div class="product-media">
             <img class="product-image" src="${escapeAttr(product.image_url)}" alt="${escapeAttr(product.name)}" loading="lazy">
         </div>
@@ -200,7 +204,7 @@ function productCard(product) {
             </div>
         </div>
     `;
-    card.querySelector(".favorite-button").addEventListener("click", () => toast("Ürün favorilere eklendi."));
+    card.querySelector(".favorite-button").addEventListener("click", () => toggleFavorite(product));
     card.querySelector('[data-action="detail"]').addEventListener("click", () => showProduct(product));
     card.querySelector('[data-action="cart"]').addEventListener("click", () => addToCart(product));
     return card;
@@ -236,6 +240,68 @@ function addToCart(product) {
     }
     persistCart();
     toast("Urun sepete eklendi.");
+}
+
+function toggleFavorite(product) {
+    const existingIndex = state.favorites.findIndex((item) => item.id === product.id);
+    if (existingIndex >= 0) {
+        state.favorites.splice(existingIndex, 1);
+        toast("Ürün favorilerden çıkarıldı.");
+    } else {
+        state.favorites.push(product);
+        toast("Ürün favorilere eklendi.");
+    }
+    persistFavorites();
+    renderProducts();
+}
+
+function renderFavorites() {
+    const body = state.favorites.length
+        ? state.favorites.map((product, index) => `
+            <div class="cart-item">
+                <img src="${escapeAttr(product.image_url)}" alt="${escapeAttr(product.name)}">
+                <div>
+                    <strong>${escapeHTML(product.name)}</strong>
+                    <div class="meta">${escapeHTML(product.grade || product.category_id || "")}</div>
+                    <div class="meta">${formatPrice(product.price)}</div>
+                </div>
+                <button class="close-button" type="button" data-favorite-remove="${index}" aria-label="Favorilerden çıkar">×</button>
+            </div>
+        `).join("")
+        : `<p class="state-line">Favori ürün yok.</p>`;
+
+    els.favoritesDialog.innerHTML = `
+        <div class="dialog-header">
+            <h2>Favoriler</h2>
+            <button class="close-button" type="button" aria-label="Kapat">×</button>
+        </div>
+        <div class="dialog-body">
+            ${body}
+        </div>
+    `;
+    els.favoritesDialog.querySelector(".dialog-header .close-button").addEventListener("click", () => els.favoritesDialog.close());
+    els.favoritesDialog.querySelectorAll("[data-favorite-remove]").forEach((button) => {
+        button.addEventListener("click", () => {
+            state.favorites.splice(Number(button.dataset.favoriteRemove), 1);
+            persistFavorites();
+            renderFavorites();
+            renderProducts();
+        });
+    });
+    els.favoritesDialog.showModal();
+}
+
+function persistFavorites() {
+    localStorage.setItem("karabiber_favorites", JSON.stringify(state.favorites));
+    renderFavoriteCount();
+}
+
+function renderFavoriteCount() {
+    els.favoriteCount.textContent = state.favorites.length;
+}
+
+function isFavoriteProduct(productId) {
+    return state.favorites.some((product) => product.id === productId);
 }
 
 function renderCart() {

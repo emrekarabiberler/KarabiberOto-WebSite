@@ -120,6 +120,17 @@ button {
     color: var(--accent);
 }
 
+.favorite-nav-button strong {
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+}
+
 .icon {
     font-size: 20px;
     line-height: 1;
@@ -339,6 +350,11 @@ button {
     color: var(--accent);
     font-size: 28px;
     box-shadow: 0 12px 28px rgba(20, 24, 34, .08);
+}
+
+.favorite-button.is-active {
+    background: var(--accent);
+    color: #fff;
 }
 
 .product-media {
