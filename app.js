@@ -201,7 +201,6 @@ function productCard(product) {
         </div>
         <div class="product-footer">
             <span class="price">${formatPrice(product.price)}</span>
-            <span class="swatch" style="background:${escapeAttr(product.color_hex)}"></span>
         </div>
         <div class="product-footer">
             <button class="button secondary" type="button" data-action="detail">Detay</button>
@@ -222,7 +221,6 @@ function showProduct(product) {
         <div class="dialog-body">
             <img class="product-image" src="${escapeAttr(product.image_url)}" alt="${escapeAttr(product.name)}">
             <p class="meta">${escapeHTML(product.description || "-")}</p>
-            <p><span class="swatch" style="background:${escapeAttr(product.color_hex)}"></span> ${escapeHTML(product.color_hex)}</p>
             <p><strong>${formatPrice(product.price)}</strong></p>
             <button class="button primary" type="button">Sepete Ekle</button>
         </div>
