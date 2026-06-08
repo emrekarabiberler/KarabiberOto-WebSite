@@ -10,6 +10,8 @@ const state = {
     favorites: parseJSON(localStorage.getItem("karabiber_favorites")) || [],
     selectedCategory: "",
     search: "",
+    minPrice: "",
+    maxPrice: "",
     selectedColor: { id: "crimson", name: "Crimson", hex: "#DC2626", productCode: "KRB-CR" },
     originalImageUrl: "",
     resultImageUrl: "",
@@ -44,7 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function bindElements() {
     [
         "cartCount", "favoriteCount", "openCart", "openFavorites", "viewTitle",
-        "searchInput", "refreshCatalog", "filterCategoryList", "clearCategoryFilter", "catalogState", "productsGrid",
+        "searchInput", "refreshCatalog", "filterCategoryList", "clearCategoryFilter", "resetPriceFilter",
+        "minPriceInput", "maxPriceInput", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
         "barcodeForm", "barcodeInput", "barcodeResult", "authCard", "profileName",
@@ -61,6 +64,9 @@ function bindEvents() {
 
     els.refreshCatalog.addEventListener("click", loadCatalog);
     els.clearCategoryFilter.addEventListener("click", () => selectCategory(""));
+    els.resetPriceFilter.addEventListener("click", resetPriceFilter);
+    els.minPriceInput.addEventListener("input", updatePriceFilter);
+    els.maxPriceInput.addEventListener("input", updatePriceFilter);
     els.searchInput.addEventListener("input", (event) => {
         state.search = event.target.value.trim().toLowerCase();
         renderProducts();
@@ -171,15 +177,20 @@ function selectCategory(categoryId) {
 function renderProducts() {
     const products = state.products.filter((product) => {
         const categoryMatch = !state.selectedCategory || product.category_id === state.selectedCategory;
+        const minPrice = state.minPrice === "" ? 0 : Number(state.minPrice);
+        const maxPrice = state.maxPrice === "" ? Infinity : Number(state.maxPrice);
+        const priceMatch = product.price >= minPrice && product.price <= maxPrice;
         const searchSource = `${product.name} ${product.description} ${product.grade} ${product.category_id}`.toLowerCase();
-        return categoryMatch && (!state.search || searchSource.includes(state.search));
+        return categoryMatch && priceMatch && (!state.search || searchSource.includes(state.search));
     });
 
     if (!products.length) {
         els.productsGrid.innerHTML = `<div class="empty-store">Gösterilecek ürün yok.</div>`;
+        els.catalogState.textContent = "Seçilen filtrelere uygun ürün yok.";
         return;
     }
 
+    els.catalogState.textContent = `${products.length} ürün gösteriliyor.`;
     els.productsGrid.replaceChildren(...products.map(productCard));
 }
 
@@ -197,7 +208,7 @@ function productCard(product) {
             <div class="meta">${escapeHTML(product.grade || product.description || product.category_id)}</div>
             <div class="product-footer">
                 <button class="price-pill" type="button" data-action="cart">
-                    <span>▣</span>
+                    <span>🛒</span>
                     <strong>${formatPrice(product.price)}</strong>
                 </button>
                 <button class="button secondary" type="button" data-action="detail">Detay</button>
@@ -208,6 +219,20 @@ function productCard(product) {
     card.querySelector('[data-action="detail"]').addEventListener("click", () => showProduct(product));
     card.querySelector('[data-action="cart"]').addEventListener("click", () => addToCart(product));
     return card;
+}
+
+function updatePriceFilter() {
+    state.minPrice = els.minPriceInput.value;
+    state.maxPrice = els.maxPriceInput.value;
+    renderProducts();
+}
+
+function resetPriceFilter() {
+    state.minPrice = "";
+    state.maxPrice = "";
+    els.minPriceInput.value = "";
+    els.maxPriceInput.value = "";
+    renderProducts();
 }
 
 function showProduct(product) {

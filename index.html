@@ -53,7 +53,7 @@
                         <section class="filter-block">
                             <div class="filter-title">
                                 <h2>Fiyat Aralığı</h2>
-                                <button type="button">Sıfırla</button>
+                                <button id="resetPriceFilter" type="button">Sıfırla</button>
                             </div>
                             <p>Popüler ürün ortalaması 2.500 TL</p>
                             <div class="range-visual">
@@ -69,6 +69,16 @@
                             <div class="range-line">
                                 <strong>250 TL</strong>
                                 <strong>7.500 TL</strong>
+                            </div>
+                            <div class="price-filter-fields">
+                                <label>
+                                    <span>Min</span>
+                                    <input id="minPriceInput" type="number" min="0" inputmode="decimal" placeholder="0">
+                                </label>
+                                <label>
+                                    <span>Max</span>
+                                    <input id="maxPriceInput" type="number" min="0" inputmode="decimal" placeholder="99999">
+                                </label>
                             </div>
                         </section>
 

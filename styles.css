@@ -249,6 +249,37 @@ button {
     font-size: 13px;
 }
 
+.price-filter-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.price-filter-fields label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.price-filter-fields input {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 0 12px;
+    background: #f7f8fb;
+    color: var(--ink);
+    outline: 0;
+}
+
+.price-filter-fields input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(96, 70, 246, .14);
+}
+
 .check-row {
     display: flex;
     align-items: center;
