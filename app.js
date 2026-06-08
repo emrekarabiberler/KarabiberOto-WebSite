@@ -507,7 +507,10 @@ function normalizeApiBase(value) {
 }
 
 function formatPrice(value) {
-    return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "USD" }).format(Number(value || 0));
+    return `${new Intl.NumberFormat("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(Number(value || 0))} TL`;
 }
 
 function escapeHTML(value) {
