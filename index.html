@@ -8,68 +8,108 @@
 </head>
 <body>
     <div class="app-shell">
-        <aside class="sidebar">
+        <header class="site-header">
             <a class="brand" href="#store" aria-label="KarabiberOto">
-                <span class="brand-mark">K</span>
-                <span>
-                    <strong>KarabiberOto</strong>
-                    <small>Web Magaza</small>
-                </span>
+                <span class="brand-mark">KBO</span>
+                <strong>KarabiberOto</strong>
             </a>
 
-            <nav class="nav-list" aria-label="Ana menu">
+            <div class="search-field">
+                <span>⌕</span>
+                <input id="searchInput" type="search" placeholder="Ürün, marka veya kategori ara">
+            </div>
+
+            <nav class="nav-list" aria-label="Ana menü">
                 <button class="nav-button is-active" data-view="store" type="button">
-                    <span class="icon">⌂</span>
-                    <span>Magaza</span>
+                    <span class="icon">⌂</span> Mağaza
                 </button>
                 <button class="nav-button" data-view="ai" type="button">
-                    <span class="icon">✦</span>
-                    <span>AI Renk</span>
+                    <span class="icon">✦</span> AI Renk
                 </button>
                 <button class="nav-button" data-view="scanner" type="button">
-                    <span class="icon">▦</span>
-                    <span>Barkod</span>
+                    <span class="icon">▦</span> Barkod
                 </button>
                 <button class="nav-button" data-view="profile" type="button">
-                    <span class="icon">◎</span>
-                    <span>Profil</span>
+                    <span class="icon">◎</span> Hesap
                 </button>
             </nav>
 
-            <div class="sidebar-footer">
-                <label for="apiBase">API adresi</label>
-                <input id="apiBase" type="url" autocomplete="off">
-                <button id="saveApiBase" class="button secondary" type="button">Kaydet</button>
-            </div>
-        </aside>
+            <button id="openCart" class="cart-button" type="button" aria-label="Sepeti aç">
+                <span>Sepet</span>
+                <strong id="cartCount">0</strong>
+            </button>
+        </header>
 
         <main class="main">
-            <header class="topbar">
-                <div>
-                    <p class="eyebrow">Mobildeki akislari webde deneyin</p>
-                    <h1 id="viewTitle">Magaza</h1>
-                </div>
-                <div class="topbar-actions">
-                    <span id="connectionStatus" class="status neutral">Baglanti kontrol ediliyor</span>
-                    <button id="openCart" class="cart-button" type="button" aria-label="Sepeti ac">
-                        <span>Sepet</span>
-                        <strong id="cartCount">0</strong>
-                    </button>
-                </div>
-            </header>
+            <h1 id="viewTitle" class="view-heading">Mağaza</h1>
 
             <section id="storeView" class="view is-active" aria-labelledby="viewTitle">
-                <div class="toolbar">
-                    <div class="search-field">
-                        <span>⌕</span>
-                        <input id="searchInput" type="search" placeholder="Urun, renk veya kategori ara">
-                    </div>
-                    <button id="refreshCatalog" class="button secondary" type="button">Yenile</button>
-                </div>
-
                 <div id="categoryList" class="category-strip" aria-label="Kategoriler"></div>
-                <div id="catalogState" class="state-line"></div>
-                <div id="productsGrid" class="products-grid"></div>
+
+                <div class="store-layout">
+                    <aside class="filter-panel" aria-label="Filtreler">
+                        <section class="filter-block">
+                            <div class="filter-title">
+                                <h2>Fiyat Aralığı</h2>
+                                <button type="button">Sıfırla</button>
+                            </div>
+                            <p>Popüler ürün ortalaması 2.500 TL</p>
+                            <div class="range-visual">
+                                <span style="height: 28%"></span>
+                                <span style="height: 52%"></span>
+                                <span style="height: 38%"></span>
+                                <span style="height: 72%"></span>
+                                <span style="height: 46%"></span>
+                                <span style="height: 84%"></span>
+                                <span style="height: 58%"></span>
+                                <span style="height: 36%"></span>
+                            </div>
+                            <div class="range-line">
+                                <strong>250 TL</strong>
+                                <strong>7.500 TL</strong>
+                            </div>
+                        </section>
+
+                        <section class="filter-block">
+                            <h2>Değerlendirme</h2>
+                            <div class="rating-row">
+                                <span>★ ★ ★ ★ ☆</span>
+                                <small>4 yıldız ve üstü</small>
+                            </div>
+                        </section>
+
+                        <section class="filter-block">
+                            <div class="filter-title">
+                                <h2>Marka</h2>
+                                <button type="button">Tümü</button>
+                            </div>
+                            <label class="check-row"><span>Duxone</span><input type="checkbox" checked></label>
+                            <label class="check-row"><span>KarabiberOto</span><input type="checkbox" checked></label>
+                            <label class="check-row"><span>Premium</span><input type="checkbox" checked></label>
+                            <label class="check-row"><span>Profesyonel Seri</span><input type="checkbox"></label>
+                        </section>
+
+                        <section class="filter-block">
+                            <h2>Teslimat</h2>
+                            <div class="delivery-toggle">
+                                <button class="is-active" type="button">Standart</button>
+                                <button type="button">Mağazadan Al</button>
+                            </div>
+                        </section>
+                    </aside>
+
+                    <section class="catalog-panel">
+                        <div class="catalog-head">
+                            <div>
+                                <p class="eyebrow">KarabiberOto satış vitrini</p>
+                                <h2>Öne çıkan ürünler</h2>
+                            </div>
+                            <button id="refreshCatalog" class="button secondary" type="button">Yenile</button>
+                        </div>
+                        <div id="catalogState" class="state-line"></div>
+                        <div id="productsGrid" class="products-grid"></div>
+                    </section>
+                </div>
             </section>
 
             <section id="aiView" class="view" aria-labelledby="viewTitle">
@@ -132,9 +172,6 @@
                                 <dd id="profileEmail">Giris yapilmadi</dd>
                             </div>
                             <div>
-                                <dt>Token</dt>
-                                <dd id="profileToken">Yok</dd>
-                            </div>
                         </dl>
                     </section>
                 </div>

@@ -1,7 +1,7 @@
 const DEFAULT_API_BASE = "http://kg1clqqc9zi1meq787vqdwi0.46.224.151.129.sslip.io";
 
 const state = {
-    apiBase: localStorage.getItem("karabiber_api_base") || DEFAULT_API_BASE,
+    apiBase: DEFAULT_API_BASE,
     token: localStorage.getItem("karabiber_token") || "",
     user: parseJSON(localStorage.getItem("karabiber_user")),
     products: [],
@@ -36,35 +36,25 @@ document.addEventListener("DOMContentLoaded", () => {
     renderColorPalette();
     renderCartCount();
     setView("store");
-    checkConnection();
     loadCatalog();
 });
 
 function bindElements() {
     [
-        "apiBase", "saveApiBase", "connectionStatus", "cartCount", "openCart", "viewTitle",
+        "cartCount", "openCart", "viewTitle",
         "searchInput", "refreshCatalog", "categoryList", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
         "barcodeForm", "barcodeInput", "barcodeResult", "authCard", "profileName",
-        "profileEmail", "profileToken", "productDialog", "cartDialog", "toast"
+        "profileEmail", "productDialog", "cartDialog", "toast"
     ].forEach((id) => {
         els[id] = document.getElementById(id);
     });
-    els.apiBase.value = state.apiBase;
 }
 
 function bindEvents() {
     document.querySelectorAll(".nav-button").forEach((button) => {
         button.addEventListener("click", () => setView(button.dataset.view));
-    });
-
-    els.saveApiBase.addEventListener("click", () => {
-        state.apiBase = normalizeApiBase(els.apiBase.value);
-        els.apiBase.value = state.apiBase;
-        localStorage.setItem("karabiber_api_base", state.apiBase);
-        checkConnection();
-        loadCatalog();
     });
 
     els.refreshCatalog.addEventListener("click", loadCatalog);
@@ -86,10 +76,10 @@ function bindEvents() {
 
 function setView(viewName) {
     const titles = {
-        store: "Magaza",
-        ai: "AI Renk Onizleme",
+        store: "Mağaza",
+        ai: "AI Renk Önizleme",
         scanner: "Barkod Sorgu",
-        profile: "Profil ve Giris",
+        profile: "Hesap",
     };
 
     document.querySelectorAll(".nav-button").forEach((button) => {
@@ -120,23 +110,8 @@ async function api(path, options = {}) {
     return data;
 }
 
-async function checkConnection() {
-    setConnection("neutral", "Baglanti kontrol ediliyor");
-    try {
-        await api("/health", { headers: { Authorization: "" } });
-        setConnection("ok", "Backend bagli");
-    } catch (error) {
-        setConnection("error", "Backend baglanamadi");
-    }
-}
-
-function setConnection(type, text) {
-    els.connectionStatus.className = `status ${type}`;
-    els.connectionStatus.textContent = text;
-}
-
 async function loadCatalog() {
-    els.catalogState.textContent = "Katalog yukleniyor...";
+    els.catalogState.textContent = "Katalog yükleniyor...";
     try {
         const [products, categories] = await Promise.all([
             api("/products/"),
@@ -145,7 +120,7 @@ async function loadCatalog() {
         const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
         state.categories = categories.map(normalizeCategory);
         state.products = products.map((product) => normalizeProduct(product, categoryNameById));
-        els.catalogState.textContent = `${state.products.length} urun listelendi.`;
+        els.catalogState.textContent = `${state.products.length} ürün listelendi.`;
         renderCategories();
         renderProducts();
     } catch (error) {
@@ -153,12 +128,12 @@ async function loadCatalog() {
         state.categories = [];
         renderCategories();
         renderProducts();
-        els.catalogState.textContent = `Katalog alinamadi: ${error.message}`;
+        els.catalogState.textContent = "Ürünler şu an yüklenemedi. Lütfen tekrar deneyin.";
     }
 }
 
 function renderCategories() {
-    const allButton = categoryButton({ id: "", name: "Tum urunler" });
+    const allButton = categoryButton({ id: "", name: "Tüm Kategoriler" });
     els.categoryList.replaceChildren(allButton, ...state.categories.map(categoryButton));
 }
 
@@ -183,7 +158,7 @@ function renderProducts() {
     });
 
     if (!products.length) {
-        els.productsGrid.innerHTML = `<div class="state-line">Gosterilecek urun yok.</div>`;
+        els.productsGrid.innerHTML = `<div class="empty-store">Gösterilecek ürün yok.</div>`;
         return;
     }
 
@@ -194,19 +169,23 @@ function productCard(product) {
     const card = document.createElement("article");
     card.className = "product-card";
     card.innerHTML = `
-        <img class="product-image" src="${escapeAttr(product.image_url)}" alt="${escapeAttr(product.name)}" loading="lazy">
-        <div>
+        <button class="favorite-button" type="button" aria-label="Favorilere ekle">♡</button>
+        <div class="product-media">
+            <img class="product-image" src="${escapeAttr(product.image_url)}" alt="${escapeAttr(product.name)}" loading="lazy">
+        </div>
+        <div class="product-info">
             <h3>${escapeHTML(product.name)}</h3>
             <div class="meta">${escapeHTML(product.grade || product.description || product.category_id)}</div>
-        </div>
-        <div class="product-footer">
-            <span class="price">${formatPrice(product.price)}</span>
-        </div>
-        <div class="product-footer">
-            <button class="button secondary" type="button" data-action="detail">Detay</button>
-            <button class="button primary" type="button" data-action="cart">Sepete Ekle</button>
+            <div class="product-footer">
+                <button class="price-pill" type="button" data-action="cart">
+                    <span>▣</span>
+                    <strong>${formatPrice(product.price)}</strong>
+                </button>
+                <button class="button secondary" type="button" data-action="detail">Detay</button>
+            </div>
         </div>
     `;
+    card.querySelector(".favorite-button").addEventListener("click", () => toast("Ürün favorilere eklendi."));
     card.querySelector('[data-action="detail"]').addEventListener("click", () => showProduct(product));
     card.querySelector('[data-action="cart"]').addEventListener("click", () => addToCart(product));
     return card;
@@ -285,7 +264,7 @@ function renderCart() {
         state.cart = [];
         persistCart();
         els.cartDialog.close();
-        toast("Siparis alindi. Backend siparis endpointi eklenince buradan kaydedilebilir.");
+        toast("Sipariş alındı.");
     });
     els.cartDialog.showModal();
 }
@@ -474,7 +453,6 @@ function logout() {
 function renderProfile() {
     els.profileName.textContent = state.user?.name || "Misafir";
     els.profileEmail.textContent = state.user?.email || "Giris yapilmadi";
-    els.profileToken.textContent = state.token ? `${state.token.slice(0, 20)}...` : "Yok";
 }
 
 function normalizeCategory(category) {
