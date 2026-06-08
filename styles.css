@@ -568,7 +568,8 @@ button {
     padding: 5px;
 }
 
-.auth-card input {
+.auth-card input,
+.auth-form input {
     width: 100%;
     min-height: 46px;
     border: 1px solid var(--line);
@@ -581,6 +582,17 @@ button {
 .auth-card form {
     display: grid;
     gap: 12px;
+}
+
+.auth-form {
+    display: grid;
+    gap: 12px;
+}
+
+.account-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .auth-tabs {

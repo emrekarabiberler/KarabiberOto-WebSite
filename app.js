@@ -45,13 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function bindElements() {
     [
-        "cartCount", "favoriteCount", "openCart", "openFavorites", "viewTitle",
+        "cartCount", "favoriteCount", "homeLogo", "openCart", "openFavorites", "viewTitle",
         "searchInput", "refreshCatalog", "filterCategoryList", "clearCategoryFilter", "resetPriceFilter",
         "minPriceInput", "maxPriceInput", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
         "authCard", "profileName",
-        "profileEmail", "productDialog", "favoritesDialog", "cartDialog", "toast"
+        "profileEmail", "productDialog", "authDialog", "favoritesDialog", "cartDialog", "toast"
     ].forEach((id) => {
         els[id] = document.getElementById(id);
     });
@@ -60,6 +60,11 @@ function bindElements() {
 function bindEvents() {
     document.querySelectorAll(".nav-button[data-view]").forEach((button) => {
         button.addEventListener("click", () => setView(button.dataset.view));
+    });
+
+    els.homeLogo.addEventListener("click", (event) => {
+        event.preventDefault();
+        setView("store");
     });
 
     els.refreshCatalog.addEventListener("click", loadCatalog);
@@ -84,6 +89,11 @@ function bindEvents() {
 }
 
 function setView(viewName) {
+    if (viewName === "profile" && !state.user) {
+        openAuthDialog();
+        return;
+    }
+
     const titles = {
         store: "Mağaza",
         ai: "AI Renk Önizleme",
@@ -472,47 +482,79 @@ function downloadPreview() {
 }
 
 function renderAuth(mode = "login") {
-    const isLogin = mode === "login";
-    if (state.user) {
+    renderAccountActions();
+}
+
+function renderAccountActions() {
+    if (!state.user) {
         els.authCard.innerHTML = `
             <h2>Hesap</h2>
-            <p>${escapeHTML(state.user.name)} olarak giris yapildi.</p>
-            <button class="button secondary" type="button">Cikis Yap</button>
+            <p class="state-line">Siparişlerini ve favorilerini yönetmek için giriş yap.</p>
+            <button class="button primary" type="button">Giriş Yap</button>
         `;
-        els.authCard.querySelector("button").addEventListener("click", logout);
+        els.authCard.querySelector("button").addEventListener("click", () => openAuthDialog());
         return;
     }
 
     els.authCard.innerHTML = `
-        <div class="auth-tabs">
-            <button class="${isLogin ? "is-active" : ""}" type="button" data-auth-mode="login">Giris</button>
-            <button class="${!isLogin ? "is-active" : ""}" type="button" data-auth-mode="register">Kayit</button>
+        <h2>Hesap işlemleri</h2>
+        <p>${escapeHTML(state.user.name)} olarak giriş yapıldı.</p>
+        <div class="account-actions">
+            <button class="button secondary" type="button" data-account-action="orders">Siparişlerim</button>
+            <button class="button secondary" type="button" data-account-action="favorites">Favorilerim</button>
+            <button class="button primary" type="button" data-account-action="logout">Çıkış Yap</button>
         </div>
-        <form id="authForm">
-            ${isLogin ? "" : `<input id="authName" type="text" placeholder="Ad soyad" autocomplete="name">`}
-            <input id="authEmail" type="email" placeholder="E-posta" autocomplete="email" required>
-            <input id="authPassword" type="password" placeholder="Sifre" autocomplete="${isLogin ? "current-password" : "new-password"}" required minlength="6">
-            <button class="button primary" type="submit">${isLogin ? "Giris Yap" : "Kayit Ol"}</button>
-            <p id="authState" class="state-line"></p>
-        </form>
     `;
-    els.authCard.querySelectorAll("[data-auth-mode]").forEach((button) => {
-        button.addEventListener("click", () => renderAuth(button.dataset.authMode));
-    });
-    els.authCard.querySelector("#authForm").addEventListener("submit", (event) => submitAuth(event, mode));
+    els.authCard.querySelector('[data-account-action="orders"]').addEventListener("click", () => toast("Sipariş geçmişi yakında burada olacak."));
+    els.authCard.querySelector('[data-account-action="favorites"]').addEventListener("click", renderFavorites);
+    els.authCard.querySelector('[data-account-action="logout"]').addEventListener("click", logout);
 }
 
-async function submitAuth(event, mode) {
+function openAuthDialog(mode = "login") {
+    renderAuthForm(els.authDialog, mode);
+    els.authDialog.showModal();
+}
+
+function renderAuthForm(container, mode = "login") {
+    const isLogin = mode === "login";
+    container.innerHTML = `
+        <div class="dialog-header">
+            <h2>${isLogin ? "Giriş Yap" : "Kayıt Ol"}</h2>
+            <button class="close-button" type="button" aria-label="Kapat">×</button>
+        </div>
+        <div class="dialog-body">
+            <div class="auth-tabs">
+                <button class="${isLogin ? "is-active" : ""}" type="button" data-auth-mode="login">Giriş</button>
+                <button class="${!isLogin ? "is-active" : ""}" type="button" data-auth-mode="register">Kayıt</button>
+            </div>
+            <form class="auth-form">
+                ${isLogin ? "" : `<input name="name" type="text" placeholder="Ad soyad" autocomplete="name">`}
+                <input name="email" type="email" placeholder="E-posta" autocomplete="email" required>
+                <input name="password" type="password" placeholder="Şifre" autocomplete="${isLogin ? "current-password" : "new-password"}" required minlength="6">
+                <button class="button primary" type="submit">${isLogin ? "Giriş Yap" : "Kayıt Ol"}</button>
+                <p class="state-line" data-auth-state></p>
+            </form>
+        </div>
+    `;
+    container.querySelector(".close-button").addEventListener("click", () => container.close());
+    container.querySelectorAll("[data-auth-mode]").forEach((button) => {
+        button.addEventListener("click", () => renderAuthForm(container, button.dataset.authMode));
+    });
+    container.querySelector(".auth-form").addEventListener("submit", (event) => submitAuth(event, mode, container));
+}
+
+async function submitAuth(event, mode, container) {
     event.preventDefault();
-    const authState = els.authCard.querySelector("#authState");
+    const form = event.currentTarget;
+    const authState = container.querySelector("[data-auth-state]");
     const payload = {
-        email: els.authCard.querySelector("#authEmail").value,
-        password: els.authCard.querySelector("#authPassword").value,
+        email: form.elements.email.value,
+        password: form.elements.password.value,
     };
-    const nameInput = els.authCard.querySelector("#authName");
+    const nameInput = form.elements.name;
     if (nameInput) payload.name = nameInput.value;
 
-    authState.textContent = "Islem yapiliyor...";
+    authState.textContent = "İşlem yapılıyor...";
     try {
         const result = await api(`/auth/${mode}`, {
             method: "POST",
@@ -525,7 +567,9 @@ async function submitAuth(event, mode) {
         localStorage.setItem("karabiber_user", JSON.stringify(state.user));
         renderAuth();
         renderProfile();
-        toast("Giris basarili.");
+        if (container.open) container.close();
+        setView("profile");
+        toast("Giriş başarılı.");
     } catch (error) {
         authState.textContent = error.message;
     }
@@ -538,11 +582,12 @@ function logout() {
     localStorage.removeItem("karabiber_user");
     renderAuth();
     renderProfile();
+    setView("store");
 }
 
 function renderProfile() {
     els.profileName.textContent = state.user?.name || "Misafir";
-    els.profileEmail.textContent = state.user?.email || "Giris yapilmadi";
+    els.profileEmail.textContent = state.user?.email || "Giriş yapılmadı";
 }
 
 function normalizeCategory(category) {

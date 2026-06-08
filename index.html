@@ -9,7 +9,7 @@
 <body>
     <div class="app-shell">
         <header class="site-header">
-            <a class="brand" href="#store" aria-label="KarabiberOto">
+            <a id="homeLogo" class="brand" href="#store" aria-label="KarabiberOto">
                 <span class="brand-mark">KBO</span>
                 <strong>KarabiberOto</strong>
             </a>
@@ -137,17 +137,16 @@
                 <div class="profile-grid">
                     <section id="authCard" class="auth-card"></section>
                     <section class="profile-card">
-                        <h2>Oturum bilgisi</h2>
+                        <h2>Hesap bilgileri</h2>
                         <dl>
                             <div>
-                                <dt>Kullanici</dt>
+                                <dt>Kullanıcı</dt>
                                 <dd id="profileName">Misafir</dd>
                             </div>
                             <div>
                                 <dt>E-posta</dt>
-                                <dd id="profileEmail">Giris yapilmadi</dd>
+                                <dd id="profileEmail">Giriş yapılmadı</dd>
                             </div>
-                            <div>
                         </dl>
                     </section>
                 </div>
@@ -156,6 +155,7 @@
     </div>
 
     <dialog id="productDialog" class="dialog"></dialog>
+    <dialog id="authDialog" class="dialog"></dialog>
     <dialog id="favoritesDialog" class="dialog"></dialog>
     <dialog id="cartDialog" class="dialog cart-dialog"></dialog>
 
