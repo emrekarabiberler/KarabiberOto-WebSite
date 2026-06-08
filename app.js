@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function bindElements() {
     [
         "cartCount", "openCart", "viewTitle",
-        "searchInput", "refreshCatalog", "categoryList", "catalogState", "productsGrid",
+        "searchInput", "refreshCatalog", "categoryList", "filterCategoryList", "clearCategoryFilter", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
         "barcodeForm", "barcodeInput", "barcodeResult", "authCard", "profileName",
@@ -58,6 +58,7 @@ function bindEvents() {
     });
 
     els.refreshCatalog.addEventListener("click", loadCatalog);
+    els.clearCategoryFilter.addEventListener("click", () => selectCategory(""));
     els.searchInput.addEventListener("input", (event) => {
         state.search = event.target.value.trim().toLowerCase();
         renderProducts();
@@ -135,6 +136,7 @@ async function loadCatalog() {
 function renderCategories() {
     const allButton = categoryButton({ id: "", name: "Tüm Kategoriler" });
     els.categoryList.replaceChildren(allButton, ...state.categories.map(categoryButton));
+    renderFilterCategories();
 }
 
 function categoryButton(category) {
@@ -143,11 +145,37 @@ function categoryButton(category) {
     button.className = `category-button${state.selectedCategory === category.id ? " is-active" : ""}`;
     button.textContent = category.name;
     button.addEventListener("click", () => {
-        state.selectedCategory = state.selectedCategory === category.id ? "" : category.id;
-        renderCategories();
-        renderProducts();
+        selectCategory(state.selectedCategory === category.id ? "" : category.id);
     });
     return button;
+}
+
+function renderFilterCategories() {
+    if (!els.filterCategoryList) return;
+
+    if (!state.categories.length) {
+        els.filterCategoryList.innerHTML = `<p class="state-line">Kategori yok.</p>`;
+        return;
+    }
+
+    els.filterCategoryList.replaceChildren(...state.categories.map((category) => {
+        const label = document.createElement("label");
+        label.className = "check-row";
+        label.innerHTML = `
+            <span>${escapeHTML(category.name)}</span>
+            <input type="checkbox" ${state.selectedCategory === category.id ? "checked" : ""}>
+        `;
+        label.querySelector("input").addEventListener("change", (event) => {
+            selectCategory(event.target.checked ? category.id : "");
+        });
+        return label;
+    }));
+}
+
+function selectCategory(categoryId) {
+    state.selectedCategory = categoryId;
+    renderCategories();
+    renderProducts();
 }
 
 function renderProducts() {
