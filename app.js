@@ -50,7 +50,7 @@ function bindElements() {
         "minPriceInput", "maxPriceInput", "catalogState", "productsGrid",
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
         "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
-        "barcodeForm", "barcodeInput", "barcodeResult", "authCard", "profileName",
+        "authCard", "profileName",
         "profileEmail", "productDialog", "favoritesDialog", "cartDialog", "toast"
     ].forEach((id) => {
         els[id] = document.getElementById(id);
@@ -81,14 +81,12 @@ function bindEvents() {
     els.generatePreview.addEventListener("click", generatePreview);
     els.toggleOriginal.addEventListener("click", toggleOriginal);
     els.downloadPreview.addEventListener("click", downloadPreview);
-    els.barcodeForm.addEventListener("submit", lookupBarcode);
 }
 
 function setView(viewName) {
     const titles = {
         store: "Mağaza",
         ai: "AI Renk Önizleme",
-        scanner: "Barkod Sorgu",
         profile: "Hesap",
     };
 
@@ -180,7 +178,7 @@ function renderProducts() {
         const minPrice = state.minPrice === "" ? 0 : Number(state.minPrice);
         const maxPrice = state.maxPrice === "" ? Infinity : Number(state.maxPrice);
         const priceMatch = product.price >= minPrice && product.price <= maxPrice;
-        const searchSource = `${product.name} ${product.description} ${product.grade} ${product.category_id}`.toLowerCase();
+        const searchSource = `${product.name} ${product.description} ${product.grade} ${product.category_id} ${product.barcode}`.toLowerCase();
         return categoryMatch && priceMatch && (!state.search || searchSource.includes(state.search));
     });
 
@@ -471,20 +469,6 @@ function downloadPreview() {
     link.href = state.resultImageUrl;
     link.download = "karabiberoto-renk-onizleme.png";
     link.click();
-}
-
-async function lookupBarcode(event) {
-    event.preventDefault();
-    const code = els.barcodeInput.value.trim();
-    if (!code) return;
-
-    els.barcodeResult.innerHTML = `<p class="state-line">Barkod sorgulaniyor...</p>`;
-    try {
-        const product = normalizeProduct(await api(`/products/barcode/${encodeURIComponent(code)}`));
-        els.barcodeResult.replaceChildren(productCard(product));
-    } catch (error) {
-        els.barcodeResult.innerHTML = `<p class="state-line">Bu barkodla eslesen urun bulunamadi.</p>`;
-    }
 }
 
 function renderAuth(mode = "login") {

@@ -26,9 +26,6 @@
                 <button class="nav-button" data-view="ai" type="button">
                     <span class="icon">✦</span> AI Renk
                 </button>
-                <button class="nav-button" data-view="scanner" type="button">
-                    <span class="icon">▦</span> Barkod
-                </button>
                 <button class="nav-button" data-view="profile" type="button">
                     <span class="icon">◎</span> Hesap
                 </button>
@@ -55,7 +52,6 @@
                                 <h2>Fiyat Aralığı</h2>
                                 <button id="resetPriceFilter" type="button">Sıfırla</button>
                             </div>
-                            <p>Popüler ürün ortalaması 2.500 TL</p>
                             <div class="range-visual">
                                 <span style="height: 28%"></span>
                                 <span style="height: 52%"></span>
@@ -134,20 +130,6 @@
                         <button id="generatePreview" class="button primary" type="button" disabled>Onizleme Olustur</button>
                         <p id="aiState" class="state-line"></p>
                     </section>
-                </div>
-            </section>
-
-            <section id="scannerView" class="view" aria-labelledby="viewTitle">
-                <div class="scanner-panel">
-                    <div>
-                        <h2>Barkodla urun bul</h2>
-                        <p>Web kamerasi yerine barkod kodunu girerek mobildeki urun eslestirme akisini test edebilirsiniz.</p>
-                    </div>
-                    <form id="barcodeForm" class="barcode-form">
-                        <input id="barcodeInput" type="text" placeholder="Orn. 123456789" autocomplete="off">
-                        <button class="button primary" type="submit">Sorgula</button>
-                    </form>
-                    <div id="barcodeResult" class="barcode-result"></div>
                 </div>
             </section>
 

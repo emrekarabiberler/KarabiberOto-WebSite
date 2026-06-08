@@ -459,7 +459,6 @@ button {
 
 .work-panel,
 .controls-panel,
-.scanner-panel,
 .auth-card,
 .profile-card {
     border: 1px solid var(--line);
@@ -569,21 +568,6 @@ button {
     padding: 5px;
 }
 
-.scanner-panel {
-    max-width: 760px;
-}
-
-.scanner-panel p {
-    color: var(--muted);
-}
-
-.barcode-form {
-    display: flex;
-    gap: 10px;
-    margin: 18px 0;
-}
-
-.barcode-form input,
 .auth-card input {
     width: 100%;
     min-height: 46px;
@@ -592,10 +576,6 @@ button {
     padding: 0 14px;
     background: #fff;
     color: var(--ink);
-}
-
-.barcode-result {
-    min-height: 120px;
 }
 
 .auth-card form {
@@ -810,8 +790,7 @@ dd {
         display: none;
     }
 
-    .catalog-head,
-    .barcode-form {
+    .catalog-head {
         align-items: stretch;
         flex-direction: column;
     }
