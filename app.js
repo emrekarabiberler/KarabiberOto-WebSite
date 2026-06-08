@@ -142,8 +142,9 @@ async function loadCatalog() {
             api("/products/"),
             api("/products/categories"),
         ]);
-        state.products = products.map(normalizeProduct);
-        state.categories = categories;
+        const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
+        state.categories = categories.map(normalizeCategory);
+        state.products = products.map((product) => normalizeProduct(product, categoryNameById));
         els.catalogState.textContent = `${state.products.length} urun listelendi.`;
         renderCategories();
         renderProducts();
@@ -478,13 +479,25 @@ function renderProfile() {
     els.profileToken.textContent = state.token ? `${state.token.slice(0, 20)}...` : "Yok";
 }
 
-function normalizeProduct(product) {
+function normalizeCategory(category) {
+    const name = category.name || category.id || "Kategori";
+    return {
+        ...category,
+        id: name,
+        name,
+    };
+}
+
+function normalizeProduct(product, categoryNameById = new Map()) {
+    const rawCategoryId = product.category_id || "all";
+    const categoryName = categoryNameById.get(rawCategoryId) || rawCategoryId;
+
     return {
         id: product.id || product._id || crypto.randomUUID(),
         name: product.name || "Urun",
         description: product.description || "",
         price: Number(product.price || 0),
-        category_id: product.category_id || "all",
+        category_id: categoryName,
         image_url: product.image_url || "",
         grade: product.grade || "",
         color_hex: product.color_hex || "#ffffff",
