@@ -519,12 +519,6 @@ button {
     display: grid;
 }
 
-.preview-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-}
-
 .color-palette {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));

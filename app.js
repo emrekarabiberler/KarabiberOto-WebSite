@@ -15,7 +15,6 @@ const state = {
     selectedColor: { id: "crimson", name: "Crimson", hex: "#DC2626", productCode: "KRB-CR" },
     originalImageUrl: "",
     resultImageUrl: "",
-    showingOriginal: false,
 };
 
 const colors = [
@@ -48,8 +47,8 @@ function bindElements() {
         "cartCount", "favoriteCount", "homeLogo", "openCart", "openFavorites", "viewTitle",
         "searchInput", "refreshCatalog", "filterCategoryList", "clearCategoryFilter", "resetPriceFilter",
         "minPriceInput", "maxPriceInput", "catalogState", "productsGrid",
-        "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay", "toggleOriginal",
-        "downloadPreview", "colorPalette", "customColor", "generatePreview", "aiState",
+        "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay",
+        "colorPalette", "customColor", "generatePreview", "aiState",
         "authCard", "profileName",
         "profileEmail", "productDialog", "authDialog", "favoritesDialog", "cartDialog", "toast"
     ].forEach((id) => {
@@ -84,8 +83,6 @@ function bindEvents() {
         renderColorPalette();
     });
     els.generatePreview.addEventListener("click", generatePreview);
-    els.toggleOriginal.addEventListener("click", toggleOriginal);
-    els.downloadPreview.addEventListener("click", downloadPreview);
 }
 
 function setView(viewName) {
@@ -464,14 +461,11 @@ function onVehicleImageSelected(event) {
     revokeImageUrls();
     state.originalImageUrl = URL.createObjectURL(file);
     state.resultImageUrl = "";
-    state.showingOriginal = true;
     els.vehiclePreview.src = state.originalImageUrl;
     els.vehiclePreview.alt = file.name;
     els.vehiclePreview.parentElement.classList.add("has-image");
     els.emptyPreview.style.display = "none";
     els.generatePreview.disabled = false;
-    els.toggleOriginal.disabled = true;
-    els.downloadPreview.disabled = true;
     els.aiState.textContent = "";
 }
 
@@ -492,10 +486,7 @@ async function generatePreview() {
         const result = await api("/ai/recolor-car", { method: "POST", body: formData });
         if (state.resultImageUrl) URL.revokeObjectURL(state.resultImageUrl);
         state.resultImageUrl = `data:${result.mime_type || "image/png"};base64,${result.image_base64}`;
-        state.showingOriginal = false;
         els.vehiclePreview.src = state.resultImageUrl;
-        els.toggleOriginal.disabled = false;
-        els.downloadPreview.disabled = false;
         els.aiState.textContent = `Onizleme hazir. Eslesen urun kodu: ${state.selectedColor.productCode}`;
     } catch (error) {
         els.aiState.textContent = `Onizleme olusturulamadi: ${error.message}`;
@@ -503,20 +494,6 @@ async function generatePreview() {
         els.processingOverlay.classList.remove("is-active");
         els.generatePreview.disabled = false;
     }
-}
-
-function toggleOriginal() {
-    if (!state.resultImageUrl || !state.originalImageUrl) return;
-    state.showingOriginal = !state.showingOriginal;
-    els.vehiclePreview.src = state.showingOriginal ? state.originalImageUrl : state.resultImageUrl;
-}
-
-function downloadPreview() {
-    if (!state.resultImageUrl) return;
-    const link = document.createElement("a");
-    link.href = state.resultImageUrl;
-    link.download = "karabiberoto-renk-onizleme.png";
-    link.click();
 }
 
 function renderAuth(mode = "login") {
