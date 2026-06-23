@@ -265,8 +265,17 @@ function showProduct(product) {
 }
 
 function addToCart(product) {
+    const stock = getStockCount(product);
+    if (stock <= 0) {
+        toast("Stokta tükenmiştir.");
+        return;
+    }
     const existing = state.cart.find((item) => item.product.id === product.id);
     if (existing) {
+        if (existing.quantity >= stock) {
+            toast("Stokta tükenmiştir.");
+            return;
+        }
         existing.quantity += 1;
     } else {
         state.cart.push({ product, quantity: 1 });
@@ -374,22 +383,51 @@ function renderCart() {
     els.cartDialog.querySelectorAll("[data-cart-plus]").forEach((button) => {
         button.addEventListener("click", () => updateCart(Number(button.dataset.cartPlus), 1));
     });
-    els.cartDialog.querySelector(".button.primary").addEventListener("click", () => {
-        state.cart = [];
-        persistCart();
-        els.cartDialog.close();
-        toast("Sipariş alındı.");
-    });
+    els.cartDialog.querySelector(".button.primary").addEventListener("click", completePurchase);
     els.cartDialog.showModal();
 }
 
 function updateCart(index, delta) {
     const item = state.cart[index];
     if (!item) return;
+    if (delta > 0 && item.quantity >= getStockCount(item.product)) {
+        toast("Stokta tükenmiştir.");
+        return;
+    }
     item.quantity += delta;
     if (item.quantity <= 0) state.cart.splice(index, 1);
     persistCart();
     renderCart();
+}
+
+async function completePurchase() {
+    if (!state.cart.length) return;
+
+    try {
+        const response = await fetch(`${state.apiBase}/products/purchase`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                items: state.cart.map((item) => ({
+                    product_id: item.product.id,
+                    quantity: item.quantity,
+                })),
+            }),
+        });
+
+        if (!response.ok) {
+            const errorMessage = response.status === 409 ? "Stokta tükenmiştir." : await response.text();
+            throw new Error(errorMessage);
+        }
+
+        state.cart = [];
+        persistCart();
+        els.cartDialog.close();
+        toast("Sipariş alındı.");
+        await loadCatalog();
+    } catch (error) {
+        toast(error.message || "Stokta tükenmiştir.");
+    }
 }
 
 function persistCart() {
@@ -614,8 +652,18 @@ function normalizeProduct(product, categoryNameById = new Map()) {
         color_hex: product.color_hex || "#ffffff",
         product_type: product.product_type || "",
         barcode: product.barcode || "",
-        in_stock: product.in_stock !== false,
+        stock: getStockCount(product),
+        stock_count: getStockCount(product),
+        in_stock: getStockCount(product) > 0,
     };
+}
+
+function getStockCount(product) {
+    const stock = Number(product?.stock ?? product?.stock_count);
+    if (Number.isFinite(stock)) {
+        return Math.max(0, Math.trunc(stock));
+    }
+    return product?.in_stock === false ? 0 : 1;
 }
 
 function parseJSON(value) {
