@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = "https://api.karabiberoto.com.tr";
+const DEFAULT_API_BASE = "http://api.karabiberoto.com.tr";
 
 const state = {
     apiBase: DEFAULT_API_BASE,
