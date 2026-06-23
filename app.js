@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = "http://kg1clqqc9zi1meq787vqdwi0.46.224.151.129.sslip.io";
+const DEFAULT_API_BASE = "https://api.karabiberoto.com.tr";
 
 const state = {
     apiBase: DEFAULT_API_BASE,
