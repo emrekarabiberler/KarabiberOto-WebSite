@@ -1,5 +1,4 @@
-const API_PROTOCOL = window.location.protocol === "https:" ? "https:" : "http:";
-const DEFAULT_API_BASE = `${API_PROTOCOL}//api.karabiberoto.com.tr`;
+const DEFAULT_API_BASE = "http://api.46.224.151.129.sslip.io";
 
 const state = {
     apiBase: DEFAULT_API_BASE,
