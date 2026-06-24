@@ -1,4 +1,5 @@
-const DEFAULT_API_BASE = "http://api.karabiberoto.com.tr";
+const API_PROTOCOL = window.location.protocol === "https:" ? "https:" : "http:";
+const DEFAULT_API_BASE = `${API_PROTOCOL}//api.karabiberoto.com.tr`;
 
 const state = {
     apiBase: DEFAULT_API_BASE,
@@ -7,6 +8,7 @@ const state = {
     products: [],
     categories: [],
     cart: parseJSON(localStorage.getItem("karabiber_cart")) || [],
+    orders: parseJSON(localStorage.getItem("karabiber_orders")) || [],
     favorites: parseJSON(localStorage.getItem("karabiber_favorites")) || [],
     selectedCategory: "",
     search: "",
@@ -50,7 +52,7 @@ function bindElements() {
         "vehicleImage", "vehiclePreview", "emptyPreview", "processingOverlay",
         "colorPalette", "customColor", "generatePreview", "aiState",
         "authCard", "profileName",
-        "profileEmail", "productDialog", "authDialog", "favoritesDialog", "cartDialog", "toast"
+        "profileEmail", "productDialog", "authDialog", "favoritesDialog", "ordersDialog", "cartDialog", "toast"
     ].forEach((id) => {
         els[id] = document.getElementById(id);
     });
@@ -417,6 +419,7 @@ async function completePurchase() {
             throw new Error(errorMessage);
         }
 
+        recordOrder(state.cart);
         state.cart = [];
         persistCart();
         els.cartDialog.close();
@@ -438,6 +441,75 @@ function renderCartCount() {
 
 function cartTotal() {
     return state.cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+}
+
+function recordOrder(cartItems) {
+    if (!cartItems.length) return;
+
+    const products = cartItems.map((item) => ({
+        id: item.product.id,
+        name: item.product.name,
+        image_url: item.product.image_url,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        total: item.product.price * item.quantity,
+    }));
+
+    const order = {
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        customer_name: state.user?.name || "Misafir",
+        customer_email: state.user?.email || "",
+        products,
+        total: products.reduce((sum, product) => sum + product.total, 0),
+    };
+
+    state.orders = [order, ...state.orders].slice(0, 50);
+    persistOrders();
+}
+
+function persistOrders() {
+    localStorage.setItem("karabiber_orders", JSON.stringify(state.orders));
+}
+
+function renderOrders() {
+    const body = state.orders.length
+        ? state.orders.map((order) => `
+            <article class="order-card">
+                <div class="order-card-head">
+                    <div>
+                        <strong>Sipariş #${escapeHTML(order.id.slice(0, 6).toUpperCase())}</strong>
+                        <div class="meta">${formatDate(order.created_at)}</div>
+                    </div>
+                    <strong>${formatPrice(order.total)}</strong>
+                </div>
+                <div class="order-products">
+                    ${order.products.map((product) => `
+                        <div class="order-product">
+                            <img src="${escapeAttr(product.image_url || "")}" alt="${escapeAttr(product.name)}">
+                            <div>
+                                <strong>${escapeHTML(product.name)}</strong>
+                                <div class="meta">${product.quantity} adet x ${formatPrice(product.unit_price)}</div>
+                            </div>
+                            <strong>${formatPrice(product.total)}</strong>
+                        </div>
+                    `).join("")}
+                </div>
+            </article>
+        `).join("")
+        : `<p class="state-line">Henüz sipariş yok. Sepeti tamamladığında ürünler burada görünecek.</p>`;
+
+    els.ordersDialog.innerHTML = `
+        <div class="dialog-header">
+            <h2>Siparişlerim</h2>
+            <button class="close-button" type="button" aria-label="Kapat">×</button>
+        </div>
+        <div class="dialog-body">
+            ${body}
+        </div>
+    `;
+    els.ordersDialog.querySelector(".close-button").addEventListener("click", () => els.ordersDialog.close());
+    els.ordersDialog.showModal();
 }
 
 function renderColorPalette() {
@@ -520,7 +592,7 @@ function renderAccountActions() {
             <button class="button primary" type="button" data-account-action="logout">Çıkış Yap</button>
         </div>
     `;
-    els.authCard.querySelector('[data-account-action="orders"]').addEventListener("click", () => toast("Sipariş geçmişi yakında burada olacak."));
+    els.authCard.querySelector('[data-account-action="orders"]').addEventListener("click", renderOrders);
     els.authCard.querySelector('[data-account-action="favorites"]').addEventListener("click", renderFavorites);
     els.authCard.querySelector('[data-account-action="logout"]').addEventListener("click", logout);
 }
@@ -660,6 +732,16 @@ function formatPrice(value) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(Number(value || 0))} TL`;
+}
+
+function formatDate(value) {
+    return new Intl.DateTimeFormat("tr-TR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(new Date(value));
 }
 
 function escapeHTML(value) {

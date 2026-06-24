@@ -714,6 +714,51 @@ dd {
     font-weight: 900;
 }
 
+.order-card {
+    display: grid;
+    gap: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    background: var(--surface-soft);
+}
+
+.order-card + .order-card {
+    margin-top: 12px;
+}
+
+.order-card-head,
+.order-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+}
+
+.order-card-head > strong,
+.order-product > strong {
+    color: var(--accent);
+}
+
+.order-products {
+    display: grid;
+    gap: 10px;
+}
+
+.order-product {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+}
+
+.order-product img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: var(--surface);
+}
+
 .toast {
     position: fixed;
     right: 18px;
